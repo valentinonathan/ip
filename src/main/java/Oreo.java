@@ -42,9 +42,35 @@ public class Oreo {
                 System.out.println(tasks);
                 System.out.println("____________________________________________________________");
                 continue;
+            } else if (command.startsWith("mark ")) {
+                try {
+                    int taskNumber = Integer.parseInt(command.substring(5).trim());
+                    Task task = tasks.markTask(taskNumber);
+                    System.out.println(" Nice! I've marked this task as done:");
+                    System.out.println("   [X] " + task.getDescription());
+                } catch (NumberFormatException e) {
+                    System.out.println(" Please provide a task number to mark.");
+                } catch (IllegalArgumentException e) {
+                    System.out.println(" " + e.getMessage());
+                }
+                System.out.println("____________________________________________________________");
+                continue;
+            } else if (command.startsWith("unmark ")) {
+                try {
+                    int taskNumber = Integer.parseInt(command.substring(7).trim());
+                    Task task = tasks.unmarkTask(taskNumber);
+                    System.out.println(" OK, I've marked this task as not done yet:");
+                    System.out.println("   [ ] " + task.getDescription());
+                } catch (NumberFormatException e) {
+                    System.out.println(" Please provide a task number to unmark.");
+                } catch (IllegalArgumentException e) {
+                    System.out.println(" " + e.getMessage());
+                }
+                System.out.println("____________________________________________________________");
+                continue;
             }
 
-            tasks.addTask(command);
+            tasks.addTask(new Task(command));
             System.out.println(" added: " + command);
             System.out.println("____________________________________________________________");
         }

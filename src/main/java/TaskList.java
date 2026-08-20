@@ -2,8 +2,8 @@
  * Stores the tasks entered during one run of the chatbot.
  */
 public class TaskList {
-    /** The fixed-capacity array that holds task descriptions. */
-    private final String[] tasks;
+    /** The fixed-capacity array that holds tasks. */
+    private final Task[] tasks;
 
     /** The number of tasks currently stored. */
     private int taskCount;
@@ -17,17 +17,17 @@ public class TaskList {
         if (size < 0) {
             throw new IllegalArgumentException("Task list size cannot be negative");
         }
-        this.tasks = new String[size];
+        this.tasks = new Task[size];
         this.taskCount = 0;
     }
 
     /**
      * Adds a task to the end of the list.
      *
-     * @param task task description to store
+     * @param task task to store
      * @throws IllegalStateException if the task list is full
      */
-    public void addTask(String task) {
+    public void addTask(Task task) {
         if (taskCount >= tasks.length) {
             throw new IllegalStateException("Task list is full");
         }
@@ -36,18 +36,58 @@ public class TaskList {
     }
 
     /**
-     * Returns a numbered display of every stored task.
+     * Marks a task as completed.
+     *
+     * @param taskNumber one-based number of the task to mark
+     * @return the marked task
+     * @throws IllegalArgumentException if the task number does not identify a stored task
+     */
+    public Task markTask(int taskNumber) {
+        int taskIndex = getTaskIndex(taskNumber);
+        tasks[taskIndex].markAsDone();
+        return tasks[taskIndex];
+    }
+
+    /**
+     * Marks a task as not completed.
+     *
+     * @param taskNumber one-based number of the task to unmark
+     * @return the unmarked task
+     * @throws IllegalArgumentException if the task number does not identify a stored task
+     */
+    public Task unmarkTask(int taskNumber) {
+        int taskIndex = getTaskIndex(taskNumber);
+        tasks[taskIndex].markAsNotDone();
+        return tasks[taskIndex];
+    }
+
+    /**
+     * Converts a user-facing task number to an array index.
+     *
+     * @param taskNumber one-based number of the task
+     * @return zero-based array index for the task
+     * @throws IllegalArgumentException if the task number does not identify a stored task
+     */
+    private int getTaskIndex(int taskNumber) {
+        if (taskNumber < 1 || taskNumber > taskCount) {
+            throw new IllegalArgumentException("Please provide a valid task number.");
+        }
+        return taskNumber - 1;
+    }
+
+    /**
+     * Returns a numbered display of every stored task and its completion status.
      *
      * @return the formatted task list
      */
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder(" Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            result.append(" ").append(i + 1).append(". ").append(tasks[i]);
-            if (i < taskCount - 1) {
-                result.append(System.lineSeparator());
-            }
+            result.append(System.lineSeparator())
+                    .append(" ").append(i + 1).append(".[")
+                    .append(tasks[i].getStatusIcon()).append("] ")
+                    .append(tasks[i].getDescription());
         }
         return result.toString();
     }
