@@ -50,7 +50,7 @@ public class Oreo {
                     System.out.println("   [X] " + task.getDescription());
                 } catch (NumberFormatException e) {
                     System.out.println(" Please provide a task number to mark.");
-                } catch (IllegalArgumentException e) {
+                } catch (OreoException e) {
                     System.out.println(" " + e.getMessage());
                 }
                 System.out.println("____________________________________________________________");
@@ -63,7 +63,7 @@ public class Oreo {
                     System.out.println("   [ ] " + task.getDescription());
                 } catch (NumberFormatException e) {
                     System.out.println(" Please provide a task number to unmark.");
-                } catch (IllegalArgumentException e) {
+                } catch (OreoException e) {
                     System.out.println(" " + e.getMessage());
                 }
                 System.out.println("____________________________________________________________");
@@ -74,7 +74,7 @@ public class Oreo {
             } else if (command.startsWith("deadline ")) {
                 try {
                     addTask(tasks, createDeadline(command));
-                } catch (IllegalArgumentException e) {
+                } catch (OreoException e) {
                     System.out.println(" " + e.getMessage());
                     System.out.println("____________________________________________________________");
                 }
@@ -82,7 +82,7 @@ public class Oreo {
             } else if (command.startsWith("event ")) {
                 try {
                     addTask(tasks, createEvent(command));
-                } catch (IllegalArgumentException e) {
+                } catch (OreoException e) {
                     System.out.println(" " + e.getMessage());
                     System.out.println("____________________________________________________________");
                 }
@@ -116,12 +116,12 @@ public class Oreo {
     private static Deadline createDeadline(String command) {
         int byMarker = command.indexOf(" /by ");
         if (byMarker == -1) {
-            throw new IllegalArgumentException("Use: deadline <description> /by <date/time>.");
+            throw new OreoException("Use: deadline <description> /by <date/time>.");
         }
         String description = command.substring("deadline ".length(), byMarker).trim();
         String by = command.substring(byMarker + " /by ".length()).trim();
         if (description.isEmpty() || by.isEmpty()) {
-            throw new IllegalArgumentException("Use: deadline <description> /by <date/time>.");
+            throw new OreoException("Use: deadline <description> /by <date/time>.");
         }
         return new Deadline(description, by);
     }
@@ -136,13 +136,13 @@ public class Oreo {
         int fromMarker = command.indexOf(" /from ");
         int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
         if (fromMarker == -1 || toMarker == -1) {
-            throw new IllegalArgumentException("Use: event <description> /from <date/time> /to <date/time>.");
+            throw new OreoException("Use: event <description> /from <date/time> /to <date/time>.");
         }
         String description = command.substring("event ".length(), fromMarker).trim();
         String from = command.substring(fromMarker + " /from ".length(), toMarker).trim();
         String to = command.substring(toMarker + " /to ".length()).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new IllegalArgumentException("Use: event <description> /from <date/time> /to <date/time>.");
+            throw new OreoException("Use: event <description> /from <date/time> /to <date/time>.");
         }
         return new Event(description, from, to);
     }

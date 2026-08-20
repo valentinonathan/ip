@@ -15,7 +15,7 @@ public class TaskList {
      */
     public TaskList(int size) {
         if (size < 0) {
-            throw new IllegalArgumentException("Task list size cannot be negative");
+            throw new OreoException("Task list size cannot be negative");
         }
         this.tasks = new Task[size];
         this.taskCount = 0;
@@ -29,7 +29,7 @@ public class TaskList {
      */
     public void addTask(Task task) {
         if (taskCount >= tasks.length) {
-            throw new IllegalStateException("Task list is full");
+            throw new OreoException("Task list is full");
         }
         tasks[taskCount] = task;
         taskCount++;
@@ -79,7 +79,7 @@ public class TaskList {
      */
     private int getTaskIndex(int taskNumber) {
         if (taskNumber < 1 || taskNumber > taskCount) {
-            throw new IllegalArgumentException("Please provide a valid task number.");
+            throw new OreoException("Please provide a valid task number.");
         }
         return taskNumber - 1;
     }
