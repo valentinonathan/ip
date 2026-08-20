@@ -28,6 +28,7 @@ public class Oreo {
         System.out.println(banner);
         System.out.println(greet);
 
+        TaskList tasks = new TaskList(100);
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String command = scanner.nextLine();
@@ -37,9 +38,14 @@ public class Oreo {
                 System.out.println(" Bye. Hope to see you again soon!");
                 System.out.println("____________________________________________________________");
                 break;
+            } else if (command.equals("list")) {
+                System.out.println(tasks);
+                System.out.println("____________________________________________________________");
+                continue;
             }
 
-            System.out.println(" " + command);
+            tasks.addTask(command);
+            System.out.println(" added: " + command);
             System.out.println("____________________________________________________________");
         }
     }
