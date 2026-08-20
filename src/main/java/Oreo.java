@@ -87,6 +87,20 @@ public class Oreo {
                     System.out.println("____________________________________________________________");
                 }
                 continue;
+            } else if (command.startsWith("delete ")) {
+                try {
+                    int taskNumber = Integer.parseInt(command.substring(7).trim());
+                    Task temp = tasks.deleteTask(taskNumber);
+                    System.out.println("Noted. I've removed this task: \n" + temp + "\n Now you have "
+                            + tasks.getTaskCount() + " tasks in the list.");
+                    System.out.println("____________________________________________________________");
+                } catch (NumberFormatException e) {
+                    System.out.println(" Please provide a task number to delete.");
+                } catch (OreoException e) {
+                    System.out.println(" " + e.getMessage());
+                    System.out.println("____________________________________________________________");
+                }
+                continue;
             }
 
             addTask(tasks, new Todo(command));
@@ -105,6 +119,10 @@ public class Oreo {
         System.out.println("   " + task);
         System.out.println(" Now you have " + tasks.getTaskCount() + " tasks in the list.");
         System.out.println("____________________________________________________________");
+    }
+
+    private static void deleteTask(TaskList tasks, String command) {
+
     }
 
     /**

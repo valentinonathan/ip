@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Stores the tasks entered during one run of the chatbot.
  */
@@ -25,7 +27,7 @@ public class TaskList {
      * Adds a task to the end of the list.
      *
      * @param task task to store
-     * @throws IllegalStateException if the task list is full
+     * @throws OreoException if the task list is full
      */
     public void addTask(Task task) {
         if (taskCount >= tasks.length) {
@@ -49,7 +51,7 @@ public class TaskList {
      *
      * @param taskNumber one-based number of the task to mark
      * @return the marked task
-     * @throws IllegalArgumentException if the task number does not identify a stored task
+     * @throws OreoException if the task number does not identify a stored task
      */
     public Task markTask(int taskNumber) {
         int taskIndex = getTaskIndex(taskNumber);
@@ -62,7 +64,7 @@ public class TaskList {
      *
      * @param taskNumber one-based number of the task to unmark
      * @return the unmarked task
-     * @throws IllegalArgumentException if the task number does not identify a stored task
+     * @throws OreoException if the task number does not identify a stored task
      */
     public Task unmarkTask(int taskNumber) {
         int taskIndex = getTaskIndex(taskNumber);
@@ -71,11 +73,29 @@ public class TaskList {
     }
 
     /**
+     * Deletes a task from the list
+     *
+     * @param taskNumber one-based number of the task to unmark
+     * @return void
+     * @throws OreoException if the task number does not identify a stored task
+     */
+    public Task deleteTask(int taskNumber) {
+        int taskIndex = getTaskIndex(taskNumber);
+        Task temp = this.tasks[taskIndex];
+        for (int i = taskIndex + 1; i < this.taskCount; ++i) {
+            this.tasks[i - 1] = this.tasks[i];
+        }
+        this.tasks[taskCount] = null;
+        this.taskCount--;
+        return temp;
+    }
+
+    /**
      * Converts a user-facing task number to an array index.
      *
      * @param taskNumber one-based number of the task
      * @return zero-based array index for the task
-     * @throws IllegalArgumentException if the task number does not identify a stored task
+     * @throws OreoException if the task number does not identify a stored task
      */
     private int getTaskIndex(int taskNumber) {
         if (taskNumber < 1 || taskNumber > taskCount) {
