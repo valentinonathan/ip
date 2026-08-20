@@ -68,11 +68,82 @@ public class Oreo {
                 }
                 System.out.println("____________________________________________________________");
                 continue;
+            } else if (command.startsWith("todo ")) {
+                addTask(tasks, new Todo(command.substring(5).trim()));
+                continue;
+            } else if (command.startsWith("deadline ")) {
+                try {
+                    addTask(tasks, createDeadline(command));
+                } catch (IllegalArgumentException e) {
+                    System.out.println(" " + e.getMessage());
+                    System.out.println("____________________________________________________________");
+                }
+                continue;
+            } else if (command.startsWith("event ")) {
+                try {
+                    addTask(tasks, createEvent(command));
+                } catch (IllegalArgumentException e) {
+                    System.out.println(" " + e.getMessage());
+                    System.out.println("____________________________________________________________");
+                }
+                continue;
             }
 
-            tasks.addTask(new Task(command));
-            System.out.println(" added: " + command);
-            System.out.println("____________________________________________________________");
+            addTask(tasks, new Todo(command));
         }
+    }
+
+    /**
+     * Adds a task and prints its confirmation message.
+     *
+     * @param tasks list to receive the task
+     * @param task task to add
+     */
+    private static void addTask(TaskList tasks, Task task) {
+        tasks.addTask(task);
+        System.out.println(" Got it. I've added this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + tasks.getTaskCount() + " tasks in the list.");
+        System.out.println("____________________________________________________________");
+    }
+
+    /**
+     * Creates a deadline from a command containing a description and a {@code /by} value.
+     *
+     * @param command deadline command entered by the user
+     * @return a deadline task
+     */
+    private static Deadline createDeadline(String command) {
+        int byMarker = command.indexOf(" /by ");
+        if (byMarker == -1) {
+            throw new IllegalArgumentException("Use: deadline <description> /by <date/time>.");
+        }
+        String description = command.substring("deadline ".length(), byMarker).trim();
+        String by = command.substring(byMarker + " /by ".length()).trim();
+        if (description.isEmpty() || by.isEmpty()) {
+            throw new IllegalArgumentException("Use: deadline <description> /by <date/time>.");
+        }
+        return new Deadline(description, by);
+    }
+
+    /**
+     * Creates an event from a command containing a description, {@code /from}, and {@code /to} values.
+     *
+     * @param command event command entered by the user
+     * @return an event task
+     */
+    private static Event createEvent(String command) {
+        int fromMarker = command.indexOf(" /from ");
+        int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
+        if (fromMarker == -1 || toMarker == -1) {
+            throw new IllegalArgumentException("Use: event <description> /from <date/time> /to <date/time>.");
+        }
+        String description = command.substring("event ".length(), fromMarker).trim();
+        String from = command.substring(fromMarker + " /from ".length(), toMarker).trim();
+        String to = command.substring(toMarker + " /to ".length()).trim();
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            throw new IllegalArgumentException("Use: event <description> /from <date/time> /to <date/time>.");
+        }
+        return new Event(description, from, to);
     }
 }

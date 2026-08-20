@@ -36,6 +36,15 @@ public class TaskList {
     }
 
     /**
+     * Returns the number of tasks stored in this list.
+     *
+     * @return task count
+     */
+    public int getTaskCount() {
+        return taskCount;
+    }
+
+    /**
      * Marks a task as completed.
      *
      * @param taskNumber one-based number of the task to mark
@@ -85,9 +94,8 @@ public class TaskList {
         StringBuilder result = new StringBuilder(" Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
             result.append(System.lineSeparator())
-                    .append(" ").append(i + 1).append(".[")
-                    .append(tasks[i].getStatusIcon()).append("] ")
-                    .append(tasks[i].getDescription());
+                    .append(" ").append(i + 1).append(".")
+                    .append(tasks[i]);
         }
         return result.toString();
     }

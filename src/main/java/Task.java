@@ -1,7 +1,7 @@
 /**
- * Represents one task and whether it has been completed.
+ * Represents the shared state and behaviour of a task.
  */
-public class Task {
+public abstract class Task {
     /** The text entered by the user to describe the task. */
     private final String description;
 
@@ -48,5 +48,29 @@ public class Task {
      */
     public String getStatusIcon() {
         return isDone ? "X" : " ";
+    }
+
+    /**
+     * Returns the icon identifying this kind of task.
+     *
+     * @return task type icon
+     */
+    protected abstract String getTypeIcon();
+
+    /**
+     * Returns optional type-specific details to append to the task description.
+     *
+     * @return formatted task details, or an empty string when none apply
+     */
+    protected abstract String getDetails();
+
+    /**
+     * Returns a formatted representation of this task.
+     *
+     * @return task type, completion status, description, and type-specific details
+     */
+    @Override
+    public String toString() {
+        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description + getDetails();
     }
 }
