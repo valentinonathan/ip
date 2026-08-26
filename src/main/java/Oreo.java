@@ -28,36 +28,36 @@ public class Oreo {
             ui.showDivider();
 
             switch (parser.parseCommand(command)) {
-            case BYE:
-                storage.save(tasks.storageStringRepresentation());
-                ui.showGoodbye();
-                return;
-            case LIST:
-                ui.showTaskList(tasks);
-                break;
-            case MARK:
-                updateTaskStatus(command, true);
-                break;
-            case UNMARK:
-                updateTaskStatus(command, false);
-                break;
-            case TODO:
-                addTask(parser.parseTodo(command));
-                break;
-            case DEADLINE:
-                tryAddDeadline(command);
-                break;
-            case EVENT:
-                tryAddEvent(command);
-                break;
-            case DELETE:
-                deleteTask(command);
-                break;
-            case UNKNOWN:
-                addTask(new Todo(command));
-                break;
-            default:
-                throw new AssertionError("Unhandled command");
+                case BYE:
+                    storage.save(tasks.storageStringRepresentation());
+                    ui.showGoodbye();
+                    return;
+                case LIST:
+                    ui.showTaskList(tasks);
+                    break;
+                case MARK:
+                    updateTaskStatus(command, true);
+                    break;
+                case UNMARK:
+                    updateTaskStatus(command, false);
+                    break;
+                case TODO:
+                    addTask(parser.parseTodo(command));
+                    break;
+                case DEADLINE:
+                    tryAddDeadline(command);
+                    break;
+                case EVENT:
+                    tryAddEvent(command);
+                    break;
+                case DELETE:
+                    deleteTask(command);
+                    break;
+                case UNKNOWN:
+                    addTask(new Todo(command));
+                    break;
+                default:
+                    throw new AssertionError("Unhandled command");
             }
         }
     }
