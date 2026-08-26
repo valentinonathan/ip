@@ -20,4 +20,9 @@ public class Todo extends Task {
     protected String getDetails() {
         return "";
     }
+
+    @Override
+    protected String storageStringRepresentation() {
+        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription();
+    }
 }

@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Stores the tasks entered during one run of the chatbot.
@@ -11,16 +12,39 @@ public class TaskList {
     private int taskCount;
 
     /**
-     * Creates an empty task list with the specified maximum number of tasks.
+     * Creates a task list based on the content from the storage
      *
-     * @param size maximum number of tasks the list can hold
+     * @param content the storage string representation of the tasks
      */
-    public TaskList(int size) {
-        if (size < 0) {
-            throw new OreoException("Task list size cannot be negative");
+    public TaskList(String content) {
+        String[] tasksStr = content.split("\\R");
+        this.tasks = new Task[100];
+
+        if (!content.isEmpty()) {
+            try {
+                for (int i = 0; i < tasksStr.length; ++i) {
+                    String[] tempStr = tasksStr[i].split(" \\| ");
+
+                    if (Objects.equals(tempStr[0], "T")) {
+                        this.tasks[i] = new Todo(tempStr[2]);
+                    } else if (Objects.equals(tempStr[0], "D")) {
+                        this.tasks[i] = new Deadline(tempStr[2], tempStr[3]);
+                    } else if (Objects.equals(tempStr[0], "E")) {
+                        this.tasks[i] = new Event(tempStr[2], tempStr[3], tempStr[4]);
+                    } else {
+                        throw new OreoException("Unknown task type in storage");
+                    }
+
+                    if (Objects.equals(tempStr[1], "X")) {
+                        this.tasks[i].markAsDone();
+                    }
+
+                    this.taskCount++;
+                }
+            } catch (Exception e) {
+                System.out.println(" " + e.getMessage());
+            }
         }
-        this.tasks = new Task[size];
-        this.taskCount = 0;
     }
 
     /**
@@ -102,6 +126,14 @@ public class TaskList {
             throw new OreoException("Please provide a valid task number.");
         }
         return taskNumber - 1;
+    }
+
+    public String storageStringRepresentation() {
+        StringBuilder result = new StringBuilder("");
+        for (int i = 0; i < taskCount; i++) {
+            result.append(this.tasks[i].storageStringRepresentation()).append(System.lineSeparator());
+        }
+        return result.toString();
     }
 
     /**

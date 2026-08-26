@@ -64,6 +64,8 @@ public abstract class Task {
      */
     protected abstract String getDetails();
 
+    protected abstract String storageStringRepresentation();
+
     /**
      * Returns a formatted representation of this task.
      *

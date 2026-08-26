@@ -30,4 +30,10 @@ public class Event extends Task {
     protected String getDetails() {
         return " (from: " + from + " to: " + to + ")";
     }
+
+    @Override
+    protected String storageStringRepresentation() {
+        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | "
+                + this.from + " | " + this.to;
+    }
 }
