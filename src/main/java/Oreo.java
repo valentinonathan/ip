@@ -1,3 +1,4 @@
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 /**
@@ -187,16 +188,23 @@ public class Oreo {
      * @return a deadline task
      */
     private static Deadline createDeadline(String command) {
-        int byMarker = command.indexOf(" /by ");
-        if (byMarker == -1) {
-            throw new OreoException("Use: deadline <description> /by <date/time>.");
+        Deadline result = null;
+        try {
+            int byMarker = command.indexOf(" /by ");
+            if (byMarker == -1) {
+                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date>.");
+            }
+            String description = command.substring("deadline ".length(), byMarker).trim();
+            String by = command.substring(byMarker + " /by ".length()).trim();
+            if (description.isEmpty() || by.isEmpty()) {
+                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date>.");
+            }
+            result = new Deadline(description, by);
+        } catch (DateTimeParseException e) {
+            throw new OreoException("Use: event <description> /from <year>-<month>-<date> " +
+                    "/to <year>-<month>-<date>.");
         }
-        String description = command.substring("deadline ".length(), byMarker).trim();
-        String by = command.substring(byMarker + " /by ".length()).trim();
-        if (description.isEmpty() || by.isEmpty()) {
-            throw new OreoException("Use: deadline <description> /by <date/time>.");
-        }
-        return new Deadline(description, by);
+        return result;
     }
 
     /**
@@ -206,17 +214,26 @@ public class Oreo {
      * @return an event task
      */
     private static Event createEvent(String command) {
-        int fromMarker = command.indexOf(" /from ");
-        int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
-        if (fromMarker == -1 || toMarker == -1) {
-            throw new OreoException("Use: event <description> /from <date/time> /to <date/time>.");
+        Event result = null;
+        try {
+            int fromMarker = command.indexOf(" /from ");
+            int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
+            if (fromMarker == -1 || toMarker == -1) {
+                throw new OreoException("Use: event <description> /from <year>-<month>-<date> " +
+                        "/to <year>-<month>-<date>.");
+            }
+            String description = command.substring("event ".length(), fromMarker).trim();
+            String from = command.substring(fromMarker + " /from ".length(), toMarker).trim();
+            String to = command.substring(toMarker + " /to ".length()).trim();
+            if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+                throw new OreoException("Use: event <description> /from <year>-<month>-<date> " +
+                        "/to <year>-<month>-<date>.");
+            }
+            result = new Event(description, from, to);
+        } catch (DateTimeParseException e) {
+            throw new OreoException("Use: event <description> /from <year>-<month>-<date> " +
+                    "/to <year>-<month>-<date>.");
         }
-        String description = command.substring("event ".length(), fromMarker).trim();
-        String from = command.substring(fromMarker + " /from ".length(), toMarker).trim();
-        String to = command.substring(toMarker + " /to ".length()).trim();
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new OreoException("Use: event <description> /from <date/time> /to <date/time>.");
-        }
-        return new Event(description, from, to);
+        return result;
     }
 }
