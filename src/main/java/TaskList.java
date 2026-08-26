@@ -11,6 +11,11 @@ public class TaskList {
     /** The number of tasks currently stored. */
     private int taskCount;
 
+    /** Creates an empty task list. */
+    public TaskList() {
+        this("");
+    }
+
     /**
      * Creates a task list based on the content from the storage
      *

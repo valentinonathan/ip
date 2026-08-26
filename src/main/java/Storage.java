@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +12,7 @@ public class Storage {
             try {
                 tempFile.createNewFile();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new OreoException("Unable to create the task data file.");
             }
         }
         this.filePath = Path.of(filePath);
@@ -21,10 +20,9 @@ public class Storage {
 
     public String load() {
         try {
-            String content = Files.readString(this.filePath);
-            return content;
+            return Files.readString(this.filePath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new OreoException("Unable to load saved tasks.");
         }
     }
 
@@ -32,7 +30,7 @@ public class Storage {
         try {
             Files.writeString(this.filePath, content);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new OreoException("Unable to save tasks.");
         }
     }
 }

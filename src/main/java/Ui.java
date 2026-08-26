@@ -1,7 +1,11 @@
+import java.util.Scanner;
+
 /**
  * Handles all console input and output for the chatbot.
  */
 public class Ui {
+    /** Reads commands entered through the console. */
+    private final Scanner scanner = new Scanner(System.in);
     /** A divider used to visually separate chatbot messages. */
     private static final String DIVIDER = "____________________________________________________________";
 
@@ -28,6 +32,16 @@ public class Ui {
     public void showWelcome() {
         System.out.println(BANNER);
         System.out.println(GREETING);
+    }
+
+    /** Returns whether another command is available from the user. */
+    public boolean hasNextCommand() {
+        return scanner.hasNextLine();
+    }
+
+    /** Reads the next command entered by the user. */
+    public String readCommand() {
+        return scanner.nextLine();
     }
 
     /** Displays the standard divider. */
@@ -76,5 +90,10 @@ public class Ui {
     /** Displays an error message. */
     public void showError(String message) {
         System.out.println(" " + message);
+    }
+
+    /** Displays a general error when saved tasks cannot be loaded. */
+    public void showLoadingError() {
+        System.out.println(" Unable to load saved tasks. Starting with an empty task list.");
     }
 }
