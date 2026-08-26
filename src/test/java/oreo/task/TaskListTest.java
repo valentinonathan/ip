@@ -1,0 +1,90 @@
+package oreo.task;
+
+import oreo.exception.OreoException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/** Tests state-changing operations performed by {@link TaskList}. */
+class TaskListTest {
+    @Test
+    void constructor_emptyContent_emptyListCreated() {
+        TaskList taskList = new TaskList();
+
+        assertEquals(0, taskList.getTaskCount());
+        assertEquals(" Here are the tasks in your list:", taskList.toString());
+    }
+
+    @Test
+    void constructor_savedTasks_tasksRestoredWithCompletionState() {
+        TaskList taskList = new TaskList("T | X | read book\nT |   | return book");
+
+        assertEquals(2, taskList.getTaskCount());
+        assertEquals(" Here are the tasks in your list:" + System.lineSeparator()
+                + " 1.[T][X] read book" + System.lineSeparator()
+                + " 2.[T][ ] return book", taskList.toString());
+    }
+
+    @Test
+    void addTask_validTask_taskAddedAndIncludedInStorageFormat() {
+        TaskList taskList = new TaskList();
+
+        taskList.addTask(new Todo("read book"));
+
+        assertEquals(1, taskList.getTaskCount());
+        assertEquals("T |   | read book" + System.lineSeparator(), taskList.storageStringRepresentation());
+    }
+
+    @Test
+    void markAndUnmarkTask_validTaskNumber_completionStateUpdated() {
+        TaskList taskList = taskListWithTodos("read book");
+
+        Task markedTask = taskList.markTask(1);
+        assertEquals("X", markedTask.getStatusIcon());
+
+        Task unmarkedTask = taskList.unmarkTask(1);
+        assertEquals(" ", unmarkedTask.getStatusIcon());
+    }
+
+    @Test
+    void deleteTask_middleTask_remainingTasksShiftedAndCountReduced() {
+        TaskList taskList = taskListWithTodos("first", "second", "third");
+
+        Task deletedTask = taskList.deleteTask(2);
+
+        assertEquals("second", deletedTask.getDescription());
+        assertEquals(2, taskList.getTaskCount());
+        assertEquals(" Here are the tasks in your list:" + System.lineSeparator()
+                + " 1.[T][ ] first" + System.lineSeparator()
+                + " 2.[T][ ] third", taskList.toString());
+    }
+
+    @Test
+    void taskOperation_invalidTaskNumber_exceptionThrown() {
+        TaskList taskList = taskListWithTodos("read book");
+
+        assertThrows(OreoException.class, () -> taskList.markTask(0));
+        assertThrows(OreoException.class, () -> taskList.unmarkTask(2));
+        assertThrows(OreoException.class, () -> taskList.deleteTask(-1));
+    }
+
+    @Test
+    void addTask_moreThanCapacity_exceptionThrown() {
+        TaskList taskList = new TaskList();
+        for (int i = 0; i < 100; i++) {
+            taskList.addTask(new Todo("task " + i));
+        }
+
+        assertThrows(OreoException.class, () -> taskList.addTask(new Todo("one too many")));
+    }
+
+    /** Creates a task list containing to-do tasks with the supplied descriptions. */
+    private TaskList taskListWithTodos(String... descriptions) {
+        TaskList taskList = new TaskList();
+        for (String description : descriptions) {
+            taskList.addTask(new Todo(description));
+        }
+        return taskList;
+    }
+}
