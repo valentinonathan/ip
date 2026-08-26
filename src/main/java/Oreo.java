@@ -46,97 +46,75 @@ public class Oreo {
     }
 
     public static void main(String[] args) {
-        String banner = """
-             ██████╗ ██████╗ ███████╗ ██████╗
-            ██╔═══██╗██╔══██╗██╔════╝██╔═══██╗
-            ██║   ██║██████╔╝█████╗  ██║   ██║
-            ██║   ██║██╔══██╗██╔══╝  ██║   ██║
-            ╚██████╔╝██║  ██║███████╗╚██████╔╝
-             ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝
-            
-                 ◉ ◉ ◉  O R E O  ◉ ◉ ◉
-                 ─────────────────────""";
-
-        String greet = """
-            ____________________________________________________________
-            Hello! I'm OREO, your personal cookie-themed chatbot: crisp, creamy, and ready to help.
-            What can I do for you? Let's make today a little sweeter.
-            ____________________________________________________________""";
-
-        System.out.println(banner);
-        System.out.println(greet);
-
         Scanner scanner = new Scanner(System.in);
+        Ui ui = new Ui();
         Storage storage = new Storage("./data/Oreo.txt");
         TaskList tasks = new TaskList(storage.load());
+        ui.showWelcome();
 
         while (true) {
             String command = scanner.nextLine();
-            System.out.println("____________________________________________________________");
+            ui.showDivider();
 
             Command commandType = Command.from(command);
 
             switch (commandType) {
                 case BYE:
-                    System.out.println(" Bye. Hope to see you again soon!");
-                    System.out.println("____________________________________________________________");
+                    ui.showGoodbye();
                     break;
 
                 case LIST:
-                    System.out.println(tasks);
-                    System.out.println("____________________________________________________________");
+                    ui.showTaskList(tasks);
                     continue;
 
                 case MARK:
                     try {
                         int taskNumber = Integer.parseInt(command.substring(5).trim());
                         Task task = tasks.markTask(taskNumber);
-                        System.out.println(" Nice! I've marked this task as done:");
-                        System.out.println("   [X] " + task.getDescription());
+                        ui.showTaskMarked(task);
                     } catch (NumberFormatException e) {
-                        System.out.println(" Please provide a task number to mark.");
+                        ui.showError("Please provide a task number to mark.");
                     } catch (OreoException e) {
-                        System.out.println(" " + e.getMessage());
+                        ui.showError(e.getMessage());
                     }
 
-                    System.out.println("____________________________________________________________");
+                    ui.showDivider();
                     continue;
 
                 case UNMARK:
                     try {
                         int taskNumber = Integer.parseInt(command.substring(7).trim());
                         Task task = tasks.unmarkTask(taskNumber);
-                        System.out.println(" OK, I've marked this task as not done yet:");
-                        System.out.println("   [ ] " + task.getDescription());
+                        ui.showTaskUnmarked(task);
                     } catch (NumberFormatException e) {
-                        System.out.println(" Please provide a task number to unmark.");
+                        ui.showError("Please provide a task number to unmark.");
                     } catch (OreoException e) {
-                        System.out.println(" " + e.getMessage());
+                        ui.showError(e.getMessage());
                     }
 
-                    System.out.println("____________________________________________________________");
+                    ui.showDivider();
                     continue;
 
                 case TODO:
-                    addTask(tasks, new Todo(command.substring(5).trim()));
+                    addTask(tasks, ui, new Todo(command.substring(5).trim()));
                     continue;
 
                 case DEADLINE:
                     try {
-                        addTask(tasks, createDeadline(command));
+                        addTask(tasks, ui, createDeadline(command));
                     } catch (OreoException e) {
-                        System.out.println(" " + e.getMessage());
-                        System.out.println("____________________________________________________________");
+                        ui.showError(e.getMessage());
+                        ui.showDivider();
                     }
 
                     continue;
 
                 case EVENT:
                     try {
-                        addTask(tasks, createEvent(command));
+                        addTask(tasks, ui, createEvent(command));
                     } catch (OreoException e) {
-                        System.out.println(" " + e.getMessage());
-                        System.out.println("____________________________________________________________");
+                        ui.showError(e.getMessage());
+                        ui.showDivider();
                     }
 
                     continue;
@@ -146,21 +124,19 @@ public class Oreo {
                         int taskNumber = Integer.parseInt(command.substring(7).trim());
                         Task temp = tasks.deleteTask(taskNumber);
 
-                        System.out.println("Noted. I've removed this task: \n" + temp
-                                + "\n Now you have " + tasks.getTaskCount() + " tasks in the list.");
-
-                        System.out.println("____________________________________________________________");
+                        ui.showTaskDeleted(temp, tasks.getTaskCount());
+                        ui.showDivider();
                     } catch (NumberFormatException e) {
-                        System.out.println(" Please provide a task number to delete.");
+                        ui.showError("Please provide a task number to delete.");
                     } catch (OreoException e) {
-                        System.out.println(" " + e.getMessage());
-                        System.out.println("____________________________________________________________");
+                        ui.showError(e.getMessage());
+                        ui.showDivider();
                     }
 
                     continue;
 
                 case UNKNOWN:
-                    addTask(tasks, new Todo(command));
+                    addTask(tasks, ui, new Todo(command));
                     continue;
             }
             storage.save(tasks.storageStringRepresentation());
@@ -173,12 +149,9 @@ public class Oreo {
      * @param tasks list to receive the task
      * @param task task to add
      */
-    private static void addTask(TaskList tasks, Task task) {
+    private static void addTask(TaskList tasks, Ui ui, Task task) {
         tasks.addTask(task);
-        System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + tasks.getTaskCount() + " tasks in the list.");
-        System.out.println("____________________________________________________________");
+        ui.showTaskAdded(task, tasks.getTaskCount());
     }
 
     /**
