@@ -1,3 +1,10 @@
+package oreo;
+
+import oreo.exception.OreoException;
+import oreo.task.Task;
+import oreo.task.TaskList;
+import oreo.task.Todo;
+
 /**
  * Coordinates the chatbot's user interface, task list, command parser, and storage.
  */
@@ -28,32 +35,32 @@ public class Oreo {
             ui.showDivider();
 
             switch (parser.parseCommand(command)) {
-                case BYE:
+                case Parser.Command.BYE:
                     storage.save(tasks.storageStringRepresentation());
                     ui.showGoodbye();
                     return;
-                case LIST:
+                case Parser.Command.LIST:
                     ui.showTaskList(tasks);
                     break;
-                case MARK:
+                case Parser.Command.MARK:
                     updateTaskStatus(command, true);
                     break;
-                case UNMARK:
+                case Parser.Command.UNMARK:
                     updateTaskStatus(command, false);
                     break;
-                case TODO:
+                case Parser.Command.TODO:
                     addTask(parser.parseTodo(command));
                     break;
-                case DEADLINE:
+                case Parser.Command.DEADLINE:
                     tryAddDeadline(command);
                     break;
-                case EVENT:
+                case Parser.Command.EVENT:
                     tryAddEvent(command);
                     break;
-                case DELETE:
+                case Parser.Command.DELETE:
                     deleteTask(command);
                     break;
-                case UNKNOWN:
+                case Parser.Command.UNKNOWN:
                     addTask(new Todo(command));
                     break;
                 default:

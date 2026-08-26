@@ -1,3 +1,5 @@
+package oreo.task;
+
 /**
  * Represents the shared state and behaviour of a task.
  */
