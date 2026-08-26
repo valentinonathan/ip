@@ -65,8 +65,9 @@ public class Oreo {
         System.out.println(banner);
         System.out.println(greet);
 
-        TaskList tasks = new TaskList(100);
         Scanner scanner = new Scanner(System.in);
+        Storage storage = new Storage("./data/Oreo.txt");
+        TaskList tasks = new TaskList(storage.load());
 
         while (true) {
             String command = scanner.nextLine();
@@ -161,6 +162,7 @@ public class Oreo {
                     addTask(tasks, new Todo(command));
                     continue;
             }
+            storage.save(tasks.storageStringRepresentation());
         }
     }
 
@@ -176,10 +178,6 @@ public class Oreo {
         System.out.println("   " + task);
         System.out.println(" Now you have " + tasks.getTaskCount() + " tasks in the list.");
         System.out.println("____________________________________________________________");
-    }
-
-    private static void deleteTask(TaskList tasks, String command) {
-
     }
 
     /**

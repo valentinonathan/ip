@@ -25,4 +25,9 @@ public class Deadline extends Task {
     protected String getDetails() {
         return " (by: " + by + ")";
     }
+
+    @Override
+    protected String storageStringRepresentation() {
+        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | " + this.by;
+    }
 }
