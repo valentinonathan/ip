@@ -11,7 +11,7 @@ import java.time.format.DateTimeParseException;
 public class Parser {
     /** The command categories understood by the application. */
     public enum Command {
-        BYE, LIST, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, UNKNOWN
+        BYE, LIST, FIND, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, UNKNOWN
     }
 
     /** Identifies the command category for a line of user input. */
@@ -20,6 +20,8 @@ public class Parser {
             return Command.BYE;
         } else if (input.equals("list")) {
             return Command.LIST;
+        } else if (input.startsWith("find ")) {
+            return Command.FIND;
         } else if (input.startsWith("mark ")) {
             return Command.MARK;
         } else if (input.startsWith("unmark ")) {
@@ -34,6 +36,15 @@ public class Parser {
             return Command.DELETE;
         }
         return Command.UNKNOWN;
+    }
+
+    /** Extracts the keyword supplied to a find command. */
+    public String parseFindKeyword(String command) {
+        String keyword = command.substring("find ".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new OreoException("Use: find <keyword>.");
+        }
+        return keyword;
     }
 
     /** Creates a to-do task from a command. */
