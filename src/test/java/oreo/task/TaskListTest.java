@@ -79,6 +79,24 @@ class TaskListTest {
         assertThrows(OreoException.class, () -> taskList.addTask(new Todo("one too many")));
     }
 
+    @Test
+    void findTasks_matchingKeyword_caseInsensitiveMatchesAreNumbered() {
+        TaskList taskList = taskListWithTodos("read book", "buy groceries", "return BOOK");
+
+        String matchingTasks = taskList.findTasks("book");
+
+        assertEquals(" Here are the matching tasks in your list:" + System.lineSeparator()
+                + " 1.[T][ ] read book" + System.lineSeparator()
+                + " 2.[T][ ] return BOOK", matchingTasks);
+    }
+
+    @Test
+    void findTasks_noMatchingKeyword_headerOnly() {
+        TaskList taskList = taskListWithTodos("read book");
+
+        assertEquals(" Here are the matching tasks in your list:", taskList.findTasks("meeting"));
+    }
+
     /** Creates a task list containing to-do tasks with the supplied descriptions. */
     private TaskList taskListWithTodos(String... descriptions) {
         TaskList taskList = new TaskList();

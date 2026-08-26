@@ -2,6 +2,7 @@ package oreo.task;
 
 import oreo.exception.OreoException;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -140,6 +141,27 @@ public class TaskList {
         StringBuilder result = new StringBuilder("");
         for (int i = 0; i < taskCount; i++) {
             result.append(this.tasks[i].storageStringRepresentation()).append(System.lineSeparator());
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns all tasks whose descriptions contain the supplied keyword, ignoring letter case.
+     *
+     * @param keyword text to search for in task descriptions
+     * @return a numbered display of the matching tasks
+     */
+    public String findTasks(String keyword) {
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        StringBuilder result = new StringBuilder(" Here are the matching tasks in your list:");
+        int matchCount = 0;
+        for (int i = 0; i < taskCount; i++) {
+            if (tasks[i].getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
+                matchCount++;
+                result.append(System.lineSeparator())
+                        .append(" ").append(matchCount).append(".")
+                        .append(tasks[i]);
+            }
         }
         return result.toString();
     }
