@@ -66,6 +66,12 @@ public class Ui {
         showDivider();
     }
 
+    /** Displays tasks matching a search keyword. */
+    public void showMatchingTasks(String matchingTasks) {
+        System.out.println(matchingTasks);
+        showDivider();
+    }
+
     /** Displays confirmation that a task was added. */
     public void showTaskAdded(Task task, int taskCount) {
         System.out.println(" Got it. I've added this task:");
