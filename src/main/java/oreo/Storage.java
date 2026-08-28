@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Handles loading task data from and saving task data to a file.
+ */
 public class Storage {
     Path filePath;
 
@@ -16,7 +19,7 @@ public class Storage {
             try {
                 tempFile.createNewFile();
             } catch (IOException e) {
-                throw new OreoException("Unable to create the task data file.");
+                throw git new OreoException("Unable to create the task data file.");
             }
         }
         this.filePath = Path.of(filePath);
