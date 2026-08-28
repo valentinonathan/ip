@@ -39,32 +39,35 @@ public class Oreo {
                     storage.save(tasks.storageStringRepresentation());
                     ui.showGoodbye();
                     return;
-                case Parser.Command.LIST:
-                    ui.showTaskList(tasks);
-                    break;
-                case Parser.Command.MARK:
-                    updateTaskStatus(command, true);
-                    break;
-                case Parser.Command.UNMARK:
-                    updateTaskStatus(command, false);
-                    break;
-                case Parser.Command.TODO:
-                    addTask(parser.parseTodo(command));
-                    break;
-                case Parser.Command.DEADLINE:
-                    tryAddDeadline(command);
-                    break;
-                case Parser.Command.EVENT:
-                    tryAddEvent(command);
-                    break;
-                case Parser.Command.DELETE:
-                    deleteTask(command);
-                    break;
-                case Parser.Command.UNKNOWN:
-                    addTask(new Todo(command));
-                    break;
-                default:
-                    throw new AssertionError("Unhandled command");
+            case Parser.Command.LIST:
+                ui.showTaskList(tasks);
+                break;
+            case Parser.Command.FIND:
+                findTasks(command);
+                break;
+            case Parser.Command.MARK:
+                updateTaskStatus(command, true);
+                break;
+            case Parser.Command.UNMARK:
+                updateTaskStatus(command, false);
+                break;
+            case Parser.Command.TODO:
+                addTask(parser.parseTodo(command));
+                break;
+            case Parser.Command.DEADLINE:
+                tryAddDeadline(command);
+                break;
+            case Parser.Command.EVENT:
+                tryAddEvent(command);
+                break;
+            case Parser.Command.DELETE:
+                deleteTask(command);
+                break;
+            case Parser.Command.UNKNOWN:
+                addTask(new Todo(command));
+                break;
+            default:
+                throw new AssertionError("Unhandled command");
             }
         }
     }
@@ -73,6 +76,16 @@ public class Oreo {
     private void addTask(Task task) {
         tasks.addTask(task);
         ui.showTaskAdded(task, tasks.getTaskCount());
+    }
+
+    /** Finds and displays tasks whose descriptions contain the supplied keyword. */
+    private void findTasks(String command) {
+        try {
+            ui.showMatchingTasks(tasks.findTasks(parser.parseFindKeyword(command)));
+        } catch (OreoException e) {
+            ui.showError(e.getMessage());
+            ui.showDivider();
+        }
     }
 
     /** Marks or unmarks a task, depending on the supplied state. */
