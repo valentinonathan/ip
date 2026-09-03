@@ -2,11 +2,15 @@ plugins {
     id 'java'
     id 'application'
     id 'com.gradleup.shadow' version '9.5.1'
+<<<<<<< Updated upstream
     id 'checkstyle'
 }
 
 checkstyle {
     toolVersion = '11.0.1'
+=======
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+>>>>>>> Stashed changes
 }
 
 java {
@@ -27,6 +31,11 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
 }
 
+javafx {
+    version = '25'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
 test {
     useJUnitPlatform()
 
@@ -42,7 +51,7 @@ test {
 }
 
 application {
-    mainClass = 'oreo.Oreo'
+    mainClass = 'oreo.Launcher'
 }
 
 jar {

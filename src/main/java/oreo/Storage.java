@@ -19,7 +19,7 @@ public class Storage {
             try {
                 tempFile.createNewFile();
             } catch (IOException e) {
-                throw git new OreoException("Unable to create the task data file.");
+                throw new OreoException("Unable to create the task data file.");
             }
         }
         this.filePath = Path.of(filePath);
