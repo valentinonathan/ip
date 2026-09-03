@@ -2,8 +2,8 @@ package oreo.task;
 
 import oreo.exception.OreoException;
 
-import java.util.Locale;
 import java.util.Objects;
+import java.util.Locale;
 
 /**
  * Stores the tasks entered during one run of the chatbot.
