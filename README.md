@@ -2,6 +2,18 @@
 
 This is the Oreo chatbot project. Given below are instructions on how to use it.
 
+## Running Oreo
+
+From the project folder, run:
+
+```powershell
+.\gradlew.bat run
+```
+
+Oreo opens as a chat window. Enter commands such as `todo buy milk`, `list`,
+`mark 1`, `find milk`, and `bye` in the input box; press Enter or select **Send**.
+Tasks are saved to `data/Oreo.txt` when you enter `bye`.
+
 ## Setting up in Intellij
 
 Prerequisites: JDK 25, update Intellij to the most recent version.

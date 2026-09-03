@@ -5,14 +5,14 @@ import oreo.task.Task;
 import oreo.task.TaskList;
 import oreo.task.Todo;
 
-/**
- * Coordinates the chatbot's user interface, task list, command parser, and storage.
- */
+/** Coordinates Oreo's command parser, task list, storage, and response messages. */
 public class Oreo {
     private final Storage storage;
     private TaskList tasks;
     private final Ui ui;
     private final Parser parser;
+    private boolean hasExited;
+    private String loadingMessage = "";
 
     /** Creates the chatbot and loads its saved tasks. */
     public Oreo(String filePath) {
@@ -22,128 +22,111 @@ public class Oreo {
         try {
             tasks = new TaskList(storage.load());
         } catch (OreoException e) {
-            ui.showLoadingError();
+            loadingMessage = "Unable to load saved tasks. Starting with an empty task list.";
             tasks = new TaskList();
         }
     }
 
-    /** Runs the chatbot command loop until the user exits or input ends. */
-    public void run() {
-        ui.showWelcome();
-        while (ui.hasNextCommand()) {
-            String command = ui.readCommand();
-            ui.showDivider();
+    /** Returns Oreo's initial greeting, including any recoverable loading warning. */
+    public String getWelcomeMessage() {
+        return loadingMessage.isEmpty() ? ui.getWelcomeMessage()
+                : loadingMessage + System.lineSeparator() + ui.getWelcomeMessage();
+    }
 
-            switch (parser.parseCommand(command)) {
-                case Parser.Command.BYE:
-                    storage.save(tasks.storageStringRepresentation());
-                    ui.showGoodbye();
-                    return;
-            case Parser.Command.LIST:
-                ui.showTaskList(tasks);
-                break;
-            case Parser.Command.FIND:
-                findTasks(command);
-                break;
-            case Parser.Command.MARK:
-                updateTaskStatus(command, true);
-                break;
-            case Parser.Command.UNMARK:
-                updateTaskStatus(command, false);
-                break;
-            case Parser.Command.TODO:
-                addTask(parser.parseTodo(command));
-                break;
-            case Parser.Command.DEADLINE:
-                tryAddDeadline(command);
-                break;
-            case Parser.Command.EVENT:
-                tryAddEvent(command);
-                break;
-            case Parser.Command.DELETE:
-                deleteTask(command);
-                break;
-            case Parser.Command.UNKNOWN:
-                addTask(new Todo(command));
-                break;
-            default:
-                throw new AssertionError("Unhandled command");
-            }
+    /**
+     * Processes one command and returns the message that should be shown to the user.
+     *
+     * @param command command entered by the user
+     * @return Oreo's response to the command
+     */
+    public String getResponse(String command) {
+        if (hasExited) {
+            return "Oreo has already said goodbye. Please restart the app to continue.";
         }
+
+        return switch (parser.parseCommand(command)) {
+        case BYE -> exit();
+        case LIST -> ui.getTaskListMessage(tasks);
+        case FIND -> findTasks(command);
+        case MARK -> updateTaskStatus(command, true);
+        case UNMARK -> updateTaskStatus(command, false);
+        case TODO -> addTask(parser.parseTodo(command));
+        case DEADLINE -> tryAddDeadline(command);
+        case EVENT -> tryAddEvent(command);
+        case DELETE -> deleteTask(command);
+        case UNKNOWN -> addTask(new Todo(command));
+        };
     }
 
-    /** Adds a task and displays confirmation to the user. */
-    private void addTask(Task task) {
+    /** Returns whether the user has ended this Oreo session. */
+    public boolean hasExited() {
+        return hasExited;
+    }
+
+    /** Saves the task list and returns a farewell. */
+    private String exit() {
+        storage.save(tasks.storageStringRepresentation());
+        hasExited = true;
+        return ui.getGoodbyeMessage();
+    }
+
+    /** Adds a task and returns its confirmation message. */
+    private String addTask(Task task) {
         tasks.addTask(task);
-        ui.showTaskAdded(task, tasks.getTaskCount());
+        return ui.getTaskAddedMessage(task, tasks.getTaskCount());
     }
 
-    /** Finds and displays tasks whose descriptions contain the supplied keyword. */
-    private void findTasks(String command) {
+    /** Finds tasks whose descriptions contain the supplied keyword. */
+    private String findTasks(String command) {
         try {
-            ui.showMatchingTasks(tasks.findTasks(parser.parseFindKeyword(command)));
+            return ui.getMatchingTasksMessage(tasks.findTasks(parser.parseFindKeyword(command)));
         } catch (OreoException e) {
-            ui.showError(e.getMessage());
-            ui.showDivider();
+            return ui.getErrorMessage(e.getMessage());
         }
     }
 
     /** Marks or unmarks a task, depending on the supplied state. */
-    private void updateTaskStatus(String command, boolean shouldMark) {
+    private String updateTaskStatus(String command, boolean shouldMark) {
         try {
             String commandWord = shouldMark ? "mark " : "unmark ";
             int taskNumber = Integer.parseInt(command.substring(commandWord.length()).trim());
             Task task = shouldMark ? tasks.markTask(taskNumber) : tasks.unmarkTask(taskNumber);
-            if (shouldMark) {
-                ui.showTaskMarked(task);
-            } else {
-                ui.showTaskUnmarked(task);
-            }
+            return shouldMark ? ui.getTaskMarkedMessage(task) : ui.getTaskUnmarkedMessage(task);
         } catch (NumberFormatException e) {
-            ui.showError("Please provide a task number to " + (shouldMark ? "mark." : "unmark."));
+            return ui.getErrorMessage("Please provide a task number to " + (shouldMark ? "mark." : "unmark."));
         } catch (OreoException e) {
-            ui.showError(e.getMessage());
+            return ui.getErrorMessage(e.getMessage());
         }
-        ui.showDivider();
     }
 
-    /** Parses and adds a deadline, displaying an error when it is invalid. */
-    private void tryAddDeadline(String command) {
+    /** Parses and adds a deadline, returning an error when it is invalid. */
+    private String tryAddDeadline(String command) {
         try {
-            addTask(parser.parseDeadline(command));
+            return addTask(parser.parseDeadline(command));
         } catch (OreoException e) {
-            ui.showError(e.getMessage());
-            ui.showDivider();
+            return ui.getErrorMessage(e.getMessage());
         }
     }
 
-    /** Parses and adds an event, displaying an error when it is invalid. */
-    private void tryAddEvent(String command) {
+    /** Parses and adds an event, returning an error when it is invalid. */
+    private String tryAddEvent(String command) {
         try {
-            addTask(parser.parseEvent(command));
+            return addTask(parser.parseEvent(command));
         } catch (OreoException e) {
-            ui.showError(e.getMessage());
-            ui.showDivider();
+            return ui.getErrorMessage(e.getMessage());
         }
     }
 
-    /** Deletes the task identified by the command and displays the result. */
-    private void deleteTask(String command) {
+    /** Deletes a task and returns the outcome. */
+    private String deleteTask(String command) {
         try {
             int taskNumber = Integer.parseInt(command.substring("delete ".length()).trim());
             Task task = tasks.deleteTask(taskNumber);
-            ui.showTaskDeleted(task, tasks.getTaskCount());
+            return ui.getTaskDeletedMessage(task, tasks.getTaskCount());
         } catch (NumberFormatException e) {
-            ui.showError("Please provide a task number to delete.");
+            return ui.getErrorMessage("Please provide a task number to delete.");
         } catch (OreoException e) {
-            ui.showError(e.getMessage());
+            return ui.getErrorMessage(e.getMessage());
         }
-        ui.showDivider();
-    }
-
-    /** Starts the chatbot using the standard task-data location. */
-    public static void main(String[] args) {
-        new Oreo("data/Oreo.txt").run();
     }
 }
-
