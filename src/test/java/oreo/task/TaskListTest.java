@@ -17,6 +17,16 @@ class TaskListTest {
     }
 
     @Test
+    void constructor_initialTasks_tasksAddedInGivenOrder() {
+        TaskList taskList = new TaskList(new Todo("read book"), new Todo("return book"));
+
+        assertEquals(2, taskList.getTaskCount());
+        assertEquals(" Here are the tasks in your list:" + System.lineSeparator()
+                + " 1.[T][ ] read book" + System.lineSeparator()
+                + " 2.[T][ ] return book", taskList.toString());
+    }
+
+    @Test
     void constructor_savedTasks_tasksRestoredWithCompletionState() {
         TaskList taskList = new TaskList("T | X | read book\nT |   | return book");
 

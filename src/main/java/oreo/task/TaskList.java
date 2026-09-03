@@ -21,6 +21,19 @@ public class TaskList {
     }
 
     /**
+     * Creates a task list containing the supplied tasks in the given order.
+     *
+     * @param initialTasks zero or more tasks to add to the list
+     * @throws OreoException if more tasks than the list can hold are supplied
+     */
+    public TaskList(Task... initialTasks) {
+        this.tasks = new Task[100];
+        for (Task task : initialTasks) {
+            addTask(task);
+        }
+    }
+
+    /**
      * Creates a task list based on the content from the storage
      *
      * @param content the storage string representation of the tasks
