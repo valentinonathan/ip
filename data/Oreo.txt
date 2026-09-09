@@ -1,7 +1,3 @@
-T |   | Test
 T |   | test
-T |   | wow
-T |   | Bro what
-T |   | haha
-T |   | Test
-T |   | test
+D |   | wow | 2025-12-25
+T |   | exit
