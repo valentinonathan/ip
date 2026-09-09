@@ -9,6 +9,9 @@ import java.util.Locale;
  * Stores the tasks entered during one run of the chatbot.
  */
 public class TaskList {
+    /** Maximum number of tasks that the fixed-capacity list can store. */
+    private static final int MAX_TASK_COUNT = 100;
+
     /** The fixed-capacity array that holds tasks. */
     private final Task[] tasks;
 
@@ -27,7 +30,7 @@ public class TaskList {
      * @throws OreoException if more tasks than the list can hold are supplied
      */
     public TaskList(Task... initialTasks) {
-        this.tasks = new Task[100];
+        this.tasks = new Task[MAX_TASK_COUNT];
         for (Task task : initialTasks) {
             addTask(task);
         }
@@ -40,7 +43,7 @@ public class TaskList {
      */
     public TaskList(String content) {
         String[] tasksStr = content.split("\\R");
-        this.tasks = new Task[100];
+        this.tasks = new Task[MAX_TASK_COUNT];
 
         if (!content.isEmpty()) {
             try {
