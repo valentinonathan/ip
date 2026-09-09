@@ -13,6 +13,9 @@ import java.util.stream.IntStream;
  * Stores the tasks entered during one run of the chatbot.
  */
 public class TaskList {
+    /** Maximum number of tasks that the fixed-capacity list can store. */
+    private static final int MAX_TASK_COUNT = 100;
+
     /** The fixed-capacity array that holds tasks. */
     private final Task[] tasks;
 
@@ -31,7 +34,7 @@ public class TaskList {
      * @throws OreoException if more tasks than the list can hold are supplied
      */
     public TaskList(Task... initialTasks) {
-        this.tasks = new Task[100];
+        this.tasks = new Task[MAX_TASK_COUNT];
         for (Task task : initialTasks) {
             addTask(task);
         }
@@ -44,7 +47,7 @@ public class TaskList {
      */
     public TaskList(String content) {
         String[] tasksStr = content.split("\\R");
-        this.tasks = new Task[100];
+        this.tasks = new Task[MAX_TASK_COUNT];
 
         if (!content.isEmpty()) {
             try {
@@ -80,11 +83,13 @@ public class TaskList {
      * @throws OreoException if the task list is full
      */
     public void addTask(Task task) {
+        assert task != null : "Only constructed tasks may be stored.";
         if (taskCount >= tasks.length) {
             throw new OreoException("Task list is full");
         }
         tasks[taskCount] = task;
         taskCount++;
+        assert tasks[taskCount - 1] == task : "Adding a task must occupy the next list position.";
     }
 
     /**
@@ -135,8 +140,9 @@ public class TaskList {
         for (int i = taskIndex + 1; i < this.taskCount; ++i) {
             this.tasks[i - 1] = this.tasks[i];
         }
-        this.tasks[taskCount] = null;
+        this.tasks[taskCount - 1] = null;
         this.taskCount--;
+        assert tasks[taskCount] == null : "The first unused array position must be empty after deletion.";
         return temp;
     }
 
@@ -151,7 +157,9 @@ public class TaskList {
         if (taskNumber < 1 || taskNumber > taskCount) {
             throw new OreoException("Please provide a valid task number.");
         }
-        return taskNumber - 1;
+        int taskIndex = taskNumber - 1;
+        assert taskIndex >= 0 && taskIndex < taskCount : "A valid task number must map inside the stored range.";
+        return taskIndex;
     }
 
     public String storageStringRepresentation() {
