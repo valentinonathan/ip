@@ -1,0 +1,67 @@
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-background-color: #fffaf5;
+}
+
+.app-header {
+    -fx-background-color: linear-gradient(to right, #2c201b, #5c4033);
+}
+
+.app-title {
+    -fx-text-fill: #fffaf5;
+    -fx-font-size: 27px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 4px;
+}
+
+.app-subtitle {
+    -fx-text-fill: #e6c9aa;
+    -fx-font-size: 13px;
+}
+
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: #fffaf5;
+}
+
+.input-bar {
+    -fx-background-color: #f1e5d8;
+    -fx-border-color: #e1cdbb transparent transparent transparent;
+}
+
+.text-field {
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+    -fx-border-color: #c8aa91;
+    -fx-padding: 10px 14px;
+}
+
+.button {
+    -fx-background-color: #5c4033;
+    -fx-text-fill: white;
+    -fx-background-radius: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 9px 17px;
+}
+
+.button:hover {
+    -fx-background-color: #795548;
+}
+
+.dialog {
+    -fx-padding: 11px 14px;
+    -fx-background-radius: 14px;
+    -fx-font-size: 14px;
+    -fx-line-spacing: 2px;
+}
+
+.bot-message {
+    -fx-background-color: #f1e5d8;
+    -fx-text-fill: #30221c;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.user-message {
+    -fx-background-color: #5c4033;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER_RIGHT;
+}

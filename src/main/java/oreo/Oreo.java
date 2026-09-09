@@ -72,6 +72,7 @@ public class Oreo {
 
     /** Adds a task and returns its confirmation message. */
     private String addTask(Task task) {
+        assert task != null : "A successfully parsed command must produce a task.";
         tasks.addTask(task);
         return ui.getTaskAddedMessage(task, tasks.getTaskCount());
     }
@@ -89,6 +90,7 @@ public class Oreo {
     private String updateTaskStatus(String command, boolean shouldMark) {
         try {
             String commandWord = shouldMark ? "mark " : "unmark ";
+            assert command.startsWith(commandWord) : "The command type must match the selected operation.";
             int taskNumber = Integer.parseInt(command.substring(commandWord.length()).trim());
             Task task = shouldMark ? tasks.markTask(taskNumber) : tasks.unmarkTask(taskNumber);
             return shouldMark ? ui.getTaskMarkedMessage(task) : ui.getTaskUnmarkedMessage(task);
@@ -120,6 +122,7 @@ public class Oreo {
     /** Deletes a task and returns the outcome. */
     private String deleteTask(String command) {
         try {
+            assert command.startsWith("delete ") : "Delete commands must start with 'delete '.";
             int taskNumber = Integer.parseInt(command.substring("delete ".length()).trim());
             Task task = tasks.deleteTask(taskNumber);
             return ui.getTaskDeletedMessage(task, tasks.getTaskCount());
