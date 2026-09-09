@@ -33,12 +33,13 @@ public class Event extends Task {
 
     @Override
     protected String getDetails() {
-        return " (from: " + this.from.format(DateTimeFormatter.ofPattern("MMM d yyyy")) + " to: " + this.to.format(DateTimeFormatter.ofPattern("MMM d yyyy")) + ")";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy");
+        return " (from: " + this.from.format(formatter) + " to: " + this.to.format(formatter) + ")";
     }
 
     @Override
     protected String storageStringRepresentation() {
         return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | "
-                + this.from + " | " + this.to;
+                + this.from + " | " + this.to + getTagsStorageRepresentation();
     }
 }

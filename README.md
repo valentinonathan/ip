@@ -12,7 +12,21 @@ From the project folder, run:
 
 Oreo opens as a chat window. Enter commands such as `todo buy milk`, `list`,
 `mark 1`, `find milk`, and `bye` in the input box; press Enter or select **Send**.
-Tasks are saved to `data/Oreo.txt` when you enter `bye`.
+Tasks are saved immediately to `data/Oreo.txt` after each change.
+
+## Tags
+
+Add one or more tags to any new task by placing them at the end of the command:
+
+```text
+todo watch a movie #fun #weekend
+deadline submit report /by 2026-09-30 #school
+event team meeting /from 2026-09-15 /to 2026-09-16 #project
+```
+
+Tags must start with `#` and can contain letters, numbers, hyphens, and underscores.
+Use `tag 1 #important` or `untag 1 #fun` to update an existing task. Use
+`list tags` to group the current tasks by tag.
 
 ## Setting up in Intellij
 

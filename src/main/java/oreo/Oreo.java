@@ -45,16 +45,19 @@ public class Oreo {
         }
 
         return switch (parser.parseCommand(command)) {
-        case BYE -> exit();
-        case LIST -> ui.getTaskListMessage(tasks);
-        case FIND -> findTasks(command);
-        case MARK -> updateTaskStatus(command, true);
-        case UNMARK -> updateTaskStatus(command, false);
-        case TODO -> addTask(parser.parseTodo(command));
-        case DEADLINE -> tryAddDeadline(command);
-        case EVENT -> tryAddEvent(command);
-        case DELETE -> deleteTask(command);
-        case UNKNOWN -> addTask(new Todo(command));
+            case BYE -> exit();
+            case LIST -> ui.getTaskListMessage(tasks);
+            case LIST_TAGS -> listTags(command);
+            case FIND -> findTasks(command);
+            case MARK -> updateTaskStatus(command, true);
+            case UNMARK -> updateTaskStatus(command, false);
+            case TODO -> addTask(parser.parseTodo(command));
+            case DEADLINE -> tryAddDeadline(command);
+            case EVENT -> tryAddEvent(command);
+            case DELETE -> deleteTask(command);
+            case TAG -> updateTags(command, true);
+            case UNTAG -> updateTags(command, false);
+            case UNKNOWN -> addTask(new Todo(command));
         };
     }
 
@@ -65,15 +68,21 @@ public class Oreo {
 
     /** Saves the task list and returns a farewell. */
     private String exit() {
-        storage.save(tasks.storageStringRepresentation());
+        saveTasks();
         hasExited = true;
         return ui.getGoodbyeMessage();
+    }
+
+    /** Persists the current task list after a state-changing command. */
+    private void saveTasks() {
+        storage.save(tasks.storageStringRepresentation());
     }
 
     /** Adds a task and returns its confirmation message. */
     private String addTask(Task task) {
         assert task != null : "A successfully parsed command must produce a task.";
         tasks.addTask(task);
+        saveTasks();
         return ui.getTaskAddedMessage(task, tasks.getTaskCount());
     }
 
@@ -86,6 +95,31 @@ public class Oreo {
         }
     }
 
+    /** Lists tags and the tasks currently associated with each tag. */
+    private String listTags(String command) {
+        try {
+            parser.parseListTags(command);
+            return ui.getTagListMessage(tasks.listTags());
+        } catch (OreoException e) {
+            return ui.getErrorMessage(e.getMessage());
+        }
+    }
+
+    /** Adds or removes tags from an existing task. */
+    private String updateTags(String command, boolean shouldAdd) {
+        String commandWord = shouldAdd ? "tag" : "untag";
+        try {
+            Parser.TagUpdate tagUpdate = parser.parseTagUpdate(command, commandWord);
+            Task task = shouldAdd
+                    ? tasks.addTags(tagUpdate.taskNumber(), tagUpdate.tags())
+                    : tasks.removeTags(tagUpdate.taskNumber(), tagUpdate.tags());
+            saveTasks();
+            return shouldAdd ? ui.getTagsAddedMessage(task) : ui.getTagsRemovedMessage(task);
+        } catch (OreoException e) {
+            return ui.getErrorMessage(e.getMessage());
+        }
+    }
+
     /** Marks or unmarks a task, depending on the supplied state. */
     private String updateTaskStatus(String command, boolean shouldMark) {
         try {
@@ -93,6 +127,7 @@ public class Oreo {
             assert command.startsWith(commandWord) : "The command type must match the selected operation.";
             int taskNumber = Integer.parseInt(command.substring(commandWord.length()).trim());
             Task task = shouldMark ? tasks.markTask(taskNumber) : tasks.unmarkTask(taskNumber);
+            saveTasks();
             return shouldMark ? ui.getTaskMarkedMessage(task) : ui.getTaskUnmarkedMessage(task);
         } catch (NumberFormatException e) {
             return ui.getErrorMessage("Please provide a task number to " + (shouldMark ? "mark." : "unmark."));
@@ -125,6 +160,7 @@ public class Oreo {
             assert command.startsWith("delete ") : "Delete commands must start with 'delete '.";
             int taskNumber = Integer.parseInt(command.substring("delete ".length()).trim());
             Task task = tasks.deleteTask(taskNumber);
+            saveTasks();
             return ui.getTaskDeletedMessage(task, tasks.getTaskCount());
         } catch (NumberFormatException e) {
             return ui.getErrorMessage("Please provide a task number to delete.");

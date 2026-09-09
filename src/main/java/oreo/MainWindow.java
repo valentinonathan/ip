@@ -52,6 +52,9 @@ public class MainWindow {
         dialog.setWrapText(true);
         dialog.setMaxWidth(390);
         dialog.getStyleClass().addAll("dialog", styleClass);
+        if (message.startsWith("Here are the tags and their tasks:")) {
+            dialog.getStyleClass().add("tag-summary");
+        }
         dialogContainer.getChildren().add(dialog);
         Platform.runLater(() -> scrollPane.setVvalue(1.0));
     }

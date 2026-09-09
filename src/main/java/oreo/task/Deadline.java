@@ -33,6 +33,7 @@ public class Deadline extends Task {
 
     @Override
     protected String storageStringRepresentation() {
-        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | " + this.by;
+        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | "
+                + this.by + getTagsStorageRepresentation();
     }
 }

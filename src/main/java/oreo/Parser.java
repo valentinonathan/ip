@@ -1,23 +1,41 @@
 package oreo;
 
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import oreo.exception.OreoException;
 import oreo.task.Deadline;
 import oreo.task.Event;
+import oreo.task.Task;
 import oreo.task.Todo;
-
-import java.time.format.DateTimeParseException;
 
 /** Interprets user commands and constructs the tasks described by them. */
 public class Parser {
+    /** Message displayed when a tag does not follow the supported format. */
+    private static final String INVALID_TAG_MESSAGE = "A tag must start with # and contain only letters, numbers, "
+            + "hyphens, or underscores.";
+
     /** The command categories understood by the application. */
     public enum Command {
-        BYE, LIST, FIND, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, UNKNOWN
+        BYE, LIST, LIST_TAGS, FIND, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, TAG, UNTAG, UNKNOWN
+    }
+
+    /** A validated task number and the tags to add or remove. */
+    public record TagUpdate(int taskNumber, List<String> tags) {
+    }
+
+    /** A task description with its separately parsed trailing tags. */
+    private record TaggedDescription(String description, List<String> tags) {
     }
 
     /** Identifies the command category for a line of user input. */
     public Command parseCommand(String input) {
         if (input.equals("bye")) {
             return Command.BYE;
+        } else if (input.startsWith("list tags")) {
+            return Command.LIST_TAGS;
         } else if (input.equals("list")) {
             return Command.LIST;
         } else if (input.startsWith("find ")) {
@@ -34,6 +52,10 @@ public class Parser {
             return Command.EVENT;
         } else if (input.startsWith("delete ")) {
             return Command.DELETE;
+        } else if (input.startsWith("untag")) {
+            return Command.UNTAG;
+        } else if (input.startsWith("tag")) {
+            return Command.TAG;
         }
         return Command.UNKNOWN;
     }
@@ -51,25 +73,33 @@ public class Parser {
     /** Creates a to-do task from a command. */
     public Todo parseTodo(String command) {
         assert command.startsWith("todo ") : "To-do commands must start with 'todo '.";
-        return new Todo(command.substring("todo ".length()).trim());
+        TaggedDescription taskDetails = parseTaggedDescription(command.substring("todo ".length()),
+                "Use: todo <description> [#tag]...");
+        Todo todo = new Todo(taskDetails.description());
+        todo.addTags(taskDetails.tags());
+        return todo;
     }
 
     /** Creates a deadline from a command with a description and {@code /by} value. */
     public Deadline parseDeadline(String command) {
         assert command.startsWith("deadline ") : "Deadline commands must start with 'deadline '.";
         try {
-            int byMarker = command.indexOf(" /by ");
+            TaggedDescription taskDetails = parseTaggedDescription(command.substring("deadline ".length()),
+                    "Use: deadline <description> /by <year>-<month>-<date> [#tag]...");
+            int byMarker = taskDetails.description().indexOf(" /by ");
             if (byMarker == -1) {
-                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date>.");
+                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date> [#tag]...");
             }
-            String description = command.substring("deadline ".length(), byMarker).trim();
-            String by = command.substring(byMarker + " /by ".length()).trim();
+            String description = taskDetails.description().substring(0, byMarker).trim();
+            String by = taskDetails.description().substring(byMarker + " /by ".length()).trim();
             if (description.isEmpty() || by.isEmpty()) {
-                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date>.");
+                throw new OreoException("Use: deadline <description> /by <year>-<month>-<date> [#tag]...");
             }
-            return new Deadline(description, by);
+            Deadline deadline = new Deadline(description, by);
+            deadline.addTags(taskDetails.tags());
+            return deadline;
         } catch (DateTimeParseException e) {
-            throw new OreoException("Use: deadline <description> /by <year>-<month>-<date>.");
+            throw new OreoException("Use: deadline <description> /by <year>-<month>-<date> [#tag]...");
         }
     }
 
@@ -77,23 +107,97 @@ public class Parser {
     public Event parseEvent(String command) {
         assert command.startsWith("event ") : "Event commands must start with 'event '.";
         try {
-            int fromMarker = command.indexOf(" /from ");
-            int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
+            TaggedDescription taskDetails = parseTaggedDescription(command.substring("event ".length()),
+                    "Use: event <description> /from <year>-<month>-<date> /to <year>-<month>-<date> [#tag]...");
+            int fromMarker = taskDetails.description().indexOf(" /from ");
+            int toMarker = taskDetails.description().indexOf(" /to ", fromMarker + " /from ".length());
             if (fromMarker == -1 || toMarker == -1) {
                 throw new OreoException("Use: event <description> /from <year>-<month>-<date> "
-                        + "/to <year>-<month>-<date>.");
+                        + "/to <year>-<month>-<date> [#tag]...");
             }
-            String description = command.substring("event ".length(), fromMarker).trim();
-            String from = command.substring(fromMarker + " /from ".length(), toMarker).trim();
-            String to = command.substring(toMarker + " /to ".length()).trim();
+            String description = taskDetails.description().substring(0, fromMarker).trim();
+            String from = taskDetails.description().substring(fromMarker + " /from ".length(), toMarker).trim();
+            String to = taskDetails.description().substring(toMarker + " /to ".length()).trim();
             if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
                 throw new OreoException("Use: event <description> /from <year>-<month>-<date> "
-                        + "/to <year>-<month>-<date>.");
+                        + "/to <year>-<month>-<date> [#tag]...");
             }
-            return new Event(description, from, to);
+            Event event = new Event(description, from, to);
+            event.addTags(taskDetails.tags());
+            return event;
         } catch (DateTimeParseException e) {
             throw new OreoException("Use: event <description> /from <year>-<month>-<date> "
-                    + "/to <year>-<month>-<date>.");
+                    + "/to <year>-<month>-<date> [#tag]...");
         }
+    }
+
+    /** Validates the exact {@code list tags} command. */
+    public void parseListTags(String command) {
+        if (!command.equals("list tags")) {
+            throw new OreoException("Use: list tags.");
+        }
+    }
+
+    /** Parses a tag update command for an existing task. */
+    public TagUpdate parseTagUpdate(String command, String commandWord) {
+        String usage = "Use: " + commandWord + " <task number> <#tag>...";
+        if (!command.startsWith(commandWord + " ")) {
+            throw new OreoException(usage);
+        }
+
+        String[] arguments = command.substring(commandWord.length()).trim().split("\\s+");
+        if (arguments.length < 2) {
+            throw new OreoException(usage);
+        }
+
+        try {
+            int taskNumber = Integer.parseInt(arguments[0]);
+            List<String> tags = parseTags(List.of(arguments).subList(1, arguments.length));
+            return new TagUpdate(taskNumber, tags);
+        } catch (NumberFormatException e) {
+            throw new OreoException(usage);
+        }
+    }
+
+    /** Separates a task description from its trailing tags. */
+    private TaggedDescription parseTaggedDescription(String text, String usage) {
+        String trimmedText = text.trim();
+        if (trimmedText.isEmpty()) {
+            return new TaggedDescription("", List.of());
+        }
+
+        String[] words = trimmedText.split("\\s+");
+        int firstTagIndex = -1;
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].startsWith("#")) {
+                firstTagIndex = i;
+                break;
+            }
+        }
+        if (firstTagIndex == -1) {
+            return new TaggedDescription(trimmedText, List.of());
+        }
+
+        List<String> tags = parseTags(List.of(words).subList(firstTagIndex, words.length));
+        String description = String.join(" ", List.of(words).subList(0, firstTagIndex));
+        if (description.isEmpty()) {
+            throw new OreoException(usage);
+        }
+        return new TaggedDescription(description, tags);
+    }
+
+    /** Validates and normalizes a collection of tag tokens. */
+    private List<String> parseTags(List<String> tagTokens) {
+        List<String> tags = new ArrayList<>();
+        for (String tag : tagTokens) {
+            if (!Task.isValidTag(tag)) {
+                throw new OreoException(INVALID_TAG_MESSAGE);
+            }
+            String normalizedTag = tag.toLowerCase(Locale.ROOT);
+            if (!tags.contains(normalizedTag)) {
+                tags.add(normalizedTag);
+            }
+        }
+        return tags;
     }
 }

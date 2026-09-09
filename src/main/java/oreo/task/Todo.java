@@ -25,6 +25,7 @@ public class Todo extends Task {
 
     @Override
     protected String storageStringRepresentation() {
-        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription();
+        return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription()
+                + getTagsStorageRepresentation();
     }
 }

@@ -65,3 +65,11 @@
     -fx-text-fill: white;
     -fx-alignment: CENTER_RIGHT;
 }
+
+.tag-summary {
+    -fx-background-color: #fff2cc;
+    -fx-border-color: #d6a84b;
+    -fx-border-radius: 14px;
+    -fx-border-width: 0 0 0 4px;
+    -fx-font-weight: bold;
+}
