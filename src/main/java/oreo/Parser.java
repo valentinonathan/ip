@@ -40,6 +40,7 @@ public class Parser {
 
     /** Extracts the keyword supplied to a find command. */
     public String parseFindKeyword(String command) {
+        assert command.startsWith("find ") : "Find commands must start with 'find '.";
         String keyword = command.substring("find ".length()).trim();
         if (keyword.isEmpty()) {
             throw new OreoException("Use: find <keyword>.");
@@ -49,11 +50,13 @@ public class Parser {
 
     /** Creates a to-do task from a command. */
     public Todo parseTodo(String command) {
+        assert command.startsWith("todo ") : "To-do commands must start with 'todo '.";
         return new Todo(command.substring("todo ".length()).trim());
     }
 
     /** Creates a deadline from a command with a description and {@code /by} value. */
     public Deadline parseDeadline(String command) {
+        assert command.startsWith("deadline ") : "Deadline commands must start with 'deadline '.";
         try {
             int byMarker = command.indexOf(" /by ");
             if (byMarker == -1) {
@@ -72,6 +75,7 @@ public class Parser {
 
     /** Creates an event from a command with description, {@code /from}, and {@code /to} values. */
     public Event parseEvent(String command) {
+        assert command.startsWith("event ") : "Event commands must start with 'event '.";
         try {
             int fromMarker = command.indexOf(" /from ");
             int toMarker = command.indexOf(" /to ", fromMarker + " /from ".length());
