@@ -2,8 +2,12 @@ package oreo.task;
 
 import oreo.exception.OreoException;
 
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Stores the tasks entered during one run of the chatbot.
@@ -159,11 +163,10 @@ public class TaskList {
     }
 
     public String storageStringRepresentation() {
-        StringBuilder result = new StringBuilder("");
-        for (int i = 0; i < taskCount; i++) {
-            result.append(this.tasks[i].storageStringRepresentation()).append(System.lineSeparator());
-        }
-        return result.toString();
+        String lineSeparator = System.lineSeparator();
+        return Arrays.stream(tasks, 0, taskCount)
+                .map(Task::storageStringRepresentation)
+                .collect(Collectors.joining(lineSeparator, "", taskCount == 0 ? "" : lineSeparator));
     }
 
     /**
@@ -174,17 +177,10 @@ public class TaskList {
      */
     public String findTasks(String keyword) {
         String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
-        StringBuilder result = new StringBuilder(" Here are the matching tasks in your list:");
-        int matchCount = 0;
-        for (int i = 0; i < taskCount; i++) {
-            if (tasks[i].getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
-                matchCount++;
-                result.append(System.lineSeparator())
-                        .append(" ").append(matchCount).append(".")
-                        .append(tasks[i]);
-            }
-        }
-        return result.toString();
+        List<Task> matchingTasks = Arrays.stream(tasks, 0, taskCount)
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+                .toList();
+        return formatNumberedTasks(" Here are the matching tasks in your list:", matchingTasks);
     }
 
     /**
@@ -194,12 +190,16 @@ public class TaskList {
      */
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder(" Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            result.append(System.lineSeparator())
-                    .append(" ").append(i + 1).append(".")
-                    .append(tasks[i]);
-        }
-        return result.toString();
+        return formatNumberedTasks(" Here are the tasks in your list:",
+                Arrays.asList(tasks).subList(0, taskCount));
+    }
+
+    /** Returns a header followed by the supplied tasks, numbered from one. */
+    private String formatNumberedTasks(String header, List<Task> tasksToFormat) {
+        String lineSeparator = System.lineSeparator();
+        return IntStream.range(0, tasksToFormat.size())
+                .mapToObj(index -> " " + (index + 1) + "." + tasksToFormat.get(index))
+                .collect(Collectors.joining(lineSeparator,
+                        header + (tasksToFormat.isEmpty() ? "" : lineSeparator), ""));
     }
 }
