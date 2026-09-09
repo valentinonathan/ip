@@ -1,10 +1,13 @@
 package oreo.task;
 
-import oreo.exception.OreoException;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import oreo.exception.OreoException;
 
 /** Tests state-changing operations performed by {@link TaskList}. */
 class TaskListTest {
@@ -105,6 +108,49 @@ class TaskListTest {
         TaskList taskList = taskListWithTodos("read book");
 
         assertEquals(" Here are the matching tasks in your list:", taskList.findTasks("meeting"));
+    }
+
+    @Test
+    void tags_addRemoveAndDisplay_tagsAreNormalizedAndShownWithTask() {
+        TaskList taskList = taskListWithTodos("watch movie");
+
+        Task taggedTask = taskList.addTags(1, List.of("#Fun", "#weekend", "#fun"));
+        assertEquals(List.of("#fun", "#weekend"), taggedTask.getTags());
+        assertEquals("[T][ ] watch movie #fun #weekend", taggedTask.toString());
+
+        Task untaggedTask = taskList.removeTags(1, List.of("#FUN"));
+        assertEquals(List.of("#weekend"), untaggedTask.getTags());
+    }
+
+    @Test
+    void listTags_taggedTasks_groupsTagsWithOriginalTaskNumbers() {
+        TaskList taskList = taskListWithTodos("watch movie", "submit report");
+        taskList.addTags(1, List.of("#fun", "#weekend"));
+        taskList.addTags(2, List.of("#school"));
+
+        assertEquals(" Here are the tags and their tasks:" + System.lineSeparator()
+                + "#fun" + System.lineSeparator()
+                + "  1.[T][ ] watch movie #fun #weekend" + System.lineSeparator()
+                + "#school" + System.lineSeparator()
+                + "  2.[T][ ] submit report #school" + System.lineSeparator()
+                + "#weekend" + System.lineSeparator()
+                + "  1.[T][ ] watch movie #fun #weekend", taskList.listTags());
+    }
+
+    @Test
+    void listTags_noTaggedTasks_noTagsMessage() {
+        TaskList taskList = taskListWithTodos("watch movie");
+
+        assertEquals(" There are no tags in your list.", taskList.listTags());
+    }
+
+    @Test
+    void constructor_savedTaggedTasks_tagsRestoredAndWrittenInStorageFormat() {
+        TaskList taskList = new TaskList("T | X | read book | tags: #fun,#weekend");
+
+        assertEquals(List.of("#fun", "#weekend"), taskList.markTask(1).getTags());
+        assertEquals("T | X | read book | tags: #fun,#weekend" + System.lineSeparator(),
+                taskList.storageStringRepresentation());
     }
 
     /** Creates a task list containing to-do tasks with the supplied descriptions. */

@@ -1,14 +1,27 @@
 package oreo.task;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
  * Represents the shared state and behaviour of a task.
  */
 public abstract class Task {
+    /** Pattern accepted for a user-defined task tag. */
+    private static final Pattern TAG_PATTERN = Pattern.compile("#[A-Za-z0-9_-]+");
+
     /** The text entered by the user to describe the task. */
     private final String description;
 
     /** Whether the task has been marked as completed. */
     private boolean isDone;
+
+    /** Tags attached to this task, retained in the order in which they were added. */
+    private final Set<String> tags = new LinkedHashSet<>();
 
     /**
      * Creates a task that is initially not done.
@@ -52,6 +65,38 @@ public abstract class Task {
         return isDone ? "X" : " ";
     }
 
+    /** Returns this task's tags in their display order. */
+    public List<String> getTags() {
+        return List.copyOf(tags);
+    }
+
+    /** Returns whether the supplied text is a valid task tag. */
+    public static boolean isValidTag(String tag) {
+        return TAG_PATTERN.matcher(tag).matches();
+    }
+
+    /** Adds valid tags to this task. Duplicate tags are ignored. */
+    public void addTags(Collection<String> tagsToAdd) {
+        for (String tag : tagsToAdd) {
+            if (!isValidTag(tag)) {
+                throw new IllegalArgumentException("Invalid task tag: " + tag);
+            }
+            tags.add(tag.toLowerCase(Locale.ROOT));
+        }
+    }
+
+    /** Removes the supplied tags from this task. Tags that are absent are ignored. */
+    public void removeTags(Collection<String> tagsToRemove) {
+        for (String tag : tagsToRemove) {
+            tags.remove(tag.toLowerCase(Locale.ROOT));
+        }
+    }
+
+    /** Returns this task's optional trailing storage field for its tags. */
+    protected String getTagsStorageRepresentation() {
+        return tags.isEmpty() ? "" : " | tags: " + String.join(",", tags);
+    }
+
     /**
      * Returns the icon identifying this kind of task.
      *
@@ -75,6 +120,7 @@ public abstract class Task {
      */
     @Override
     public String toString() {
-        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description + getDetails();
+        String displayedTags = tags.isEmpty() ? "" : " " + String.join(" ", tags);
+        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description + getDetails() + displayedTags;
     }
 }

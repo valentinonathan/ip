@@ -29,6 +29,11 @@ public class Ui {
         return matchingTasks.trim();
     }
 
+    /** Returns a formatted list of tags and their associated tasks. */
+    public String getTagListMessage(String tagList) {
+        return tagList.trim();
+    }
+
     /** Returns a confirmation that a task was added. */
     public String getTaskAddedMessage(Task task, int taskCount) {
         return "Got it. I've added this task:" + System.lineSeparator()
@@ -46,6 +51,18 @@ public class Ui {
     public String getTaskUnmarkedMessage(Task task) {
         return "OK, I've marked this task as not done yet:" + System.lineSeparator()
                 + "  [ ] " + task.getDescription();
+    }
+
+    /** Returns a confirmation that tags were added to a task. */
+    public String getTagsAddedMessage(Task task) {
+        return "Got it. I've added these tags to this task:" + System.lineSeparator()
+                + "  " + task;
+    }
+
+    /** Returns a confirmation that tags were removed from a task. */
+    public String getTagsRemovedMessage(Task task) {
+        return "Got it. I've removed these tags from this task:" + System.lineSeparator()
+                + "  " + task;
     }
 
     /** Returns a confirmation that a task was deleted. */

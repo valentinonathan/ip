@@ -1,13 +1,15 @@
 package oreo.task;
 
-import oreo.exception.OreoException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import oreo.exception.OreoException;
 
 /**
  * Stores the tasks entered during one run of the chatbot.
@@ -51,27 +53,11 @@ public class TaskList {
 
         if (!content.isEmpty()) {
             try {
-                for (int i = 0; i < tasksStr.length; ++i) {
-                    String[] tempStr = tasksStr[i].split(" \\| ");
-
-                    if (Objects.equals(tempStr[0], "T")) {
-                        this.tasks[i] = new Todo(tempStr[2]);
-                    } else if (Objects.equals(tempStr[0], "D")) {
-                        this.tasks[i] = new Deadline(tempStr[2], tempStr[3]);
-                    } else if (Objects.equals(tempStr[0], "E")) {
-                        this.tasks[i] = new Event(tempStr[2], tempStr[3], tempStr[4]);
-                    } else {
-                        throw new OreoException("Unknown task type in storage");
-                    }
-
-                    if (Objects.equals(tempStr[1], "X")) {
-                        this.tasks[i].markAsDone();
-                    }
-
-                    this.taskCount++;
+                for (String taskString : tasksStr) {
+                    addTask(parseStoredTask(taskString));
                 }
             } catch (Exception e) {
-                System.out.println(" " + e.getMessage());
+                throw new OreoException("Unable to load saved tasks.");
             }
         }
     }
@@ -127,6 +113,20 @@ public class TaskList {
         return tasks[taskIndex];
     }
 
+    /** Adds tags to the task identified by its one-based list number. */
+    public Task addTags(int taskNumber, List<String> tags) {
+        Task task = tasks[getTaskIndex(taskNumber)];
+        task.addTags(tags);
+        return task;
+    }
+
+    /** Removes tags from the task identified by its one-based list number. */
+    public Task removeTags(int taskNumber, List<String> tags) {
+        Task task = tasks[getTaskIndex(taskNumber)];
+        task.removeTags(tags);
+        return task;
+    }
+
     /**
      * Deletes a task from the list
      *
@@ -162,6 +162,7 @@ public class TaskList {
         return taskIndex;
     }
 
+    /** Returns all tasks in the format used by the storage file. */
     public String storageStringRepresentation() {
         String lineSeparator = System.lineSeparator();
         return Arrays.stream(tasks, 0, taskCount)
@@ -183,6 +184,24 @@ public class TaskList {
         return formatNumberedTasks(" Here are the matching tasks in your list:", matchingTasks);
     }
 
+    /** Returns every tag followed by the tasks currently associated with it. */
+    public String listTags() {
+        Map<String, List<Integer>> taskIndexesByTag = IntStream.range(0, taskCount)
+                .boxed()
+                .flatMap(index -> tasks[index].getTags().stream().map(tag -> Map.entry(tag, index)))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, TreeMap::new,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+        if (taskIndexesByTag.isEmpty()) {
+            return " There are no tags in your list.";
+        }
+
+        String lineSeparator = System.lineSeparator();
+        String tagGroups = taskIndexesByTag.entrySet().stream()
+                .map(entry -> formatTagGroup(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(lineSeparator));
+        return " Here are the tags and their tasks:" + lineSeparator + tagGroups;
+    }
+
     /**
      * Returns a numbered display of every stored task and its completion status.
      *
@@ -201,5 +220,60 @@ public class TaskList {
                 .mapToObj(index -> " " + (index + 1) + "." + tasksToFormat.get(index))
                 .collect(Collectors.joining(lineSeparator,
                         header + (tasksToFormat.isEmpty() ? "" : lineSeparator), ""));
+    }
+
+    /** Formats one tag and each task assigned to it using the task's list number. */
+    private String formatTagGroup(String tag, List<Integer> taskIndexes) {
+        String lineSeparator = System.lineSeparator();
+        String numberedTasks = taskIndexes.stream()
+                .map(index -> "  " + (index + 1) + "." + tasks[index])
+                .collect(Collectors.joining(lineSeparator));
+        return tag + lineSeparator + numberedTasks;
+    }
+
+    /** Reconstructs one task, including its optional tags, from a storage line. */
+    private Task parseStoredTask(String taskString) {
+        String[] fields = taskString.split(" \\| ");
+        if (fields.length < 3) {
+            throw new OreoException("Invalid task in storage.");
+        }
+
+        Task task;
+        int tagFieldIndex;
+        if (Objects.equals(fields[0], "T")) {
+            task = new Todo(fields[2]);
+            tagFieldIndex = 3;
+        } else if (Objects.equals(fields[0], "D") && fields.length >= 4) {
+            task = new Deadline(fields[2], fields[3]);
+            tagFieldIndex = 4;
+        } else if (Objects.equals(fields[0], "E") && fields.length >= 5) {
+            task = new Event(fields[2], fields[3], fields[4]);
+            tagFieldIndex = 5;
+        } else {
+            throw new OreoException("Invalid task in storage.");
+        }
+
+        if (Objects.equals(fields[1], "X")) {
+            task.markAsDone();
+        }
+        if (fields.length == tagFieldIndex + 1) {
+            addStoredTags(task, fields[tagFieldIndex]);
+        } else if (fields.length != tagFieldIndex) {
+            throw new OreoException("Invalid task tags in storage.");
+        }
+        return task;
+    }
+
+    /** Adds the optional labelled tag field stored with a task. */
+    private void addStoredTags(Task task, String tagField) {
+        String tagPrefix = "tags: ";
+        if (!tagField.startsWith(tagPrefix)) {
+            throw new OreoException("Invalid task tags in storage.");
+        }
+        String storedTags = tagField.substring(tagPrefix.length());
+        if (storedTags.isEmpty()) {
+            throw new OreoException("Invalid task tags in storage.");
+        }
+        task.addTags(List.of(storedTags.split(",")));
     }
 }
