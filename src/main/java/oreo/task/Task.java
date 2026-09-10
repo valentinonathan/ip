@@ -111,7 +111,7 @@ public abstract class Task {
      */
     protected abstract String getDetails();
 
-    protected abstract String storageStringRepresentation();
+    protected abstract String toStorageString();
 
     /**
      * Returns a formatted representation of this task.

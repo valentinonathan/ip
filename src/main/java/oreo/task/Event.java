@@ -38,7 +38,7 @@ public class Event extends Task {
     }
 
     @Override
-    protected String storageStringRepresentation() {
+    protected String toStorageString() {
         return this.getTypeIcon() + " | " + this.getStatusIcon() + " | " + this.getDescription() + " | "
                 + this.from + " | " + this.to + getTagsStorageRepresentation();
     }

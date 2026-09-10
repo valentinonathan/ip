@@ -4,3 +4,4 @@ T |   | exit
 T |   | wadidaw
 T |   | list tag | tags: #meh
 T |   | list tag
+T |   | ini yang baru

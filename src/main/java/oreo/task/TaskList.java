@@ -136,14 +136,14 @@ public class TaskList {
      */
     public Task deleteTask(int taskNumber) {
         int taskIndex = getTaskIndex(taskNumber);
-        Task temp = this.tasks[taskIndex];
+        Task deletedTask = this.tasks[taskIndex];
         for (int i = taskIndex + 1; i < this.taskCount; ++i) {
             this.tasks[i - 1] = this.tasks[i];
         }
         this.tasks[taskCount - 1] = null;
         this.taskCount--;
         assert tasks[taskCount] == null : "The first unused array position must be empty after deletion.";
-        return temp;
+        return deletedTask;
     }
 
     /**
@@ -166,7 +166,7 @@ public class TaskList {
     public String storageStringRepresentation() {
         String lineSeparator = System.lineSeparator();
         return Arrays.stream(tasks, 0, taskCount)
-                .map(Task::storageStringRepresentation)
+                .map(Task::toStorageString)
                 .collect(Collectors.joining(lineSeparator, "", taskCount == 0 ? "" : lineSeparator));
     }
 
